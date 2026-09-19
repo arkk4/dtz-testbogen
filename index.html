@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTZ Antwortbogen (Interactive)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #111111;
+    --border: #000000;
+    --subtle: #f5f5f5;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.4;
+    padding: 10px;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  header, section, footer {
+    border: 2px solid var(--border);
+    margin-bottom: 14px;
+    padding: 12px;
+    background: #fff;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 6px;
+  }
+
+  .field-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .field {
+    flex: 1 1 240px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  label.field-lbl {
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  input[type="text"] {
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 6px 8px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    color: #000;
+    outline: none;
+    border-radius: 0;
+  }
+
+  input[type="text"]:focus, textarea:focus {
+    background: var(--subtle);
+  }
+
+  /* Filter checkboxes */
+  .mode-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+  }
+
+  .mode-selector label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mode-selector input[type="checkbox"] {
+    accent-color: #000;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  /* Timer */
+  .timer-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--subtle);
+    padding: 8px;
+    border: 1.5px solid var(--border);
+  }
+
+  .timer-display {
+    font-size: 1.4rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  button.sys-btn {
+    font-family: inherit;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: 0;
+    font-weight: bold;
+  }
+
+  button.sys-btn:hover {
+    background: #000;
+    color: #fff;
+  }
+
+  /* Sections */
+  .section-title {
+    font-size: 1.05rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: #000;
+    color: #fff;
+    padding: 5px 8px;
+    margin: -12px -12px 10px -12px;
+  }
+
+  .teil-title {
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 1.5px solid var(--border);
+    padding: 4px 0;
+    margin: 10px 0 6px 0;
+  }
+
+  .question-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 0.85rem;
+  }
+
+  .q-num {
+    width: 28px;
+    font-weight: bold;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Interactive Option Buttons [ X ] */
+  .opt-btn {
+    background: none;
+    border: none;
+    padding: 3px 6px;
+    margin: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--text);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .opt-btn .box {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 900;
+    background: #fff;
+    color: #000;
+    flex-shrink: 0;
+  }
+
+  /* Cross icon when selected */
+  .opt-btn.active .box::after {
+    content: "✕";
+    line-height: 1;
+  }
+
+  .opt-btn:hover .box {
+    background: #eaeaea;
+  }
+
+  /* Schreiben Section */
+  .writing-choice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+
+  textarea#essay {
+    width: 100%;
+    min-height: 230px;
+    line-height: 1.5;
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 10px;
+    border: 1.5px solid var(--border);
+    resize: vertical;
+    border-radius: 0;
+    outline: none;
+  }
+
+  .word-counter {
+    font-size: 0.75rem;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 6px;
+    }
+    .opt-btn {
+      padding: 4px 4px;
+    }
+    .opt-btn .box {
+      width: 26px;
+      height: 26px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>DTZ Antwortbogen <span>g.a.s.t.</span></h1>
+    <div class="field-row">
+      <div class="field" style="flex: 2;">
+        <label class="field-lbl" for="test-title">Test Name / Link / Notiz</label>
+        <input type="text" id="test-title" placeholder="z. B. Übungssatz 2 або посилання">
+      </div>
+      <div class="field" style="flex: 1;">
+        <label class="field-lbl" for="test-date">Datum</label>
+        <input type="text" id="test-date">
+      </div>
+    </div>
+
+    <div class="mode-selector">
+      <span><strong>Teile:</strong></span>
+      <label><input type="checkbox" id="toggle-hoeren" checked> 1 Hören</label>
+      <label><input type="checkbox" id="toggle-lesen" checked> 2 Lesen</label>
+      <label><input type="checkbox" id="toggle-schreiben" checked> 3 Schreiben</label>
+    </div>
+
+    <div class="timer-box">
+      <div>
+        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: bold;">Timer:</span>
+        <span class="timer-display" id="timer-display">00:00</span>
+      </div>
+      <div class="btn-group">
+        <button type="button" class="sys-btn" onclick="setTimer(25)">Hören 25m</button>
+        <button type="button" class="sys-btn" onclick="setTimer(45)">Lesen 45m</button>
+        <button type="button" class="sys-btn" onclick="setTimer(30)">Schreiben 30m</button>
+        <button type="button" class="sys-btn" onclick="toggleTimer()" id="btn-timer-toggle">Start</button>
+        <button type="button" class="sys-btn" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 1 HÖREN -->
+    <section id="sec-hoeren">
+      <div class="section-title">1 Hören (25 Min.)</div>
+      
+      <div class="teil-title">Teil 1 (Aufgaben 1–4)</div>
+      <div id="hoeren-teil-1"></div>
+
+      <div class="teil-title">Teil 2 (Aufgaben 5–9)</div>
+      <div id="hoeren-teil-2"></div>
+
+      <div class="teil-title">Teil 3 (Aufgaben 10–17)</div>
+      <div id="hoeren-teil-3"></div>
+
+      <div class="teil-title">Teil 4 (Aufgaben 18–20)</div>
+      <div id="hoeren-teil-4"></div>
+    </section>
+
+    <!-- 2 LESEN -->
+    <section id="sec-lesen">
+      <div class="section-title">2 Lesen (45 Min.)</div>
+
+      <div class="teil-title">Teil 1 (Aufgaben 21–25)</div>
+      <div id="lesen-teil-1"></div>
+
+      <div class="teil-title">Teil 2 (Aufgaben 26–30)</div>
+      <div id="lesen-teil-2"></div>
+
+      <div class="teil-title">Teil 3 (Aufgaben 31–36)</div>
+      <div id="lesen-teil-3"></div>
+
+      <div class="teil-title">Teil 4 (Aufgaben 37–39)</div>
+      <div id="lesen-teil-4"></div>
+
+      <div class="teil-title">Teil 5 (Aufgaben 40–45)</div>
+      <div id="lesen-teil-5"></div>
+    </section>
+
+    <!-- 3 SCHREIBEN -->
+    <section id="sec-schreiben">
+      <div class="section-title">3 Schreiben (30 Min.)</div>
+      <div class="writing-choice">
+        <span>Aufgabe:</span>
+        <button type="button" class="opt-btn" data-group="schreiben_task" data-val="A">
+          <span class="box"></span> <span>A</span>
+        </button>
+        <button type="button" class="opt-btn" data-group="schreiben_task" data-val="B">
+          <span class="box"></span> <span>B</span>
+        </button>
+      </div>
+      <textarea id="essay" placeholder="Hier Text schreiben..."></textarea>
+      <div class="word-counter" id="word-counter">Wörter: 0</div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="actions">
+      <button type="button" class="sys-btn" onclick="exportResults('txt')" style="background: #000; color: #fff;">Ergebnisse (.TXT) Speichern</button>
+      <button type="button" class="sys-btn" onclick="exportResults('json')">JSON Export</button>
+      <button type="button" class="sys-btn" onclick="clearAllData()" style="color: red; border-color: red;">Zurücksetzen</button>
+    </div>
+  </footer>
+
+<script>
+  const structure = {
+    hoeren: [
+      { container: 'hoeren-teil-1', start: 1, end: 4, type: 'abc' },
+      { container: 'hoeren-teil-2', start: 5, end: 9, type: 'abc' },
+      { container: 'hoeren-teil-3', items: [
+        { q: 10, type: 'rf' }, { q: 11, type: 'abc' },
+        { q: 12, type: 'rf' }, { q: 13, type: 'abc' },
+        { q: 14, type: 'rf' }, { q: 15, type: 'abc' },
+        { q: 16, type: 'rf' }, { q: 17, type: 'abc' }
+      ]},
+      { container: 'hoeren-teil-4', start: 18, end: 20, type: 'abcdef' }
+    ],
+    lesen: [
+      { container: 'lesen-teil-1', start: 21, end: 25, type: 'abc' },
+      { container: 'lesen-teil-2', start: 26, end: 30, type: 'dtz_ads' },
+      { container: 'lesen-teil-3', items: [
+        { q: 31, type: 'rf' }, { q: 32, type: 'abc' },
+        { q: 33, type: 'rf' }, { q: 34, type: 'abc' },
+        { q: 35, type: 'rf' }, { q: 36, type: 'abc' }
+      ]},
+      { container: 'lesen-teil-4', start: 37, end: 39, type: 'rf' },
+      { container: 'lesen-teil-5', start: 40, end: 45, type: 'abc' }
+    ]
+  };
+
+  const optionMaps = {
+    'abc': ['a', 'b', 'c'],
+    'abcdef': ['a', 'b', 'c', 'd', 'e', 'f'],
+    'dtz_ads': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'x'],
+    'rf': ['richtig', 'falsch']
+  };
+
+  function renderQuestion(qNum, type) {
+    const opts = optionMaps[type];
+    const optsHtml = opts.map(val => {
+      const labelText = (val === 'richtig') ? '+ (r)' : (val === 'falsch') ? '- (f)' : val;
+      return `
+        <button type="button" class="opt-btn" data-group="q_${qNum}" data-val="${val}">
+          <span class="box"></span>
+          <span>${labelText}</span>
+        </button>
+      `;
+    }).join('');
+
+    return `
+      <div class="question-row">
+        <span class="q-num">${qNum}.</span>
+        <div class="options">${optsHtml}</div>
+      </div>
+    `;
+  }
+
+  function initLayout() {
+    structure.hoeren.forEach(part => {
+      const el = document.getElementById(part.container);
+      if (part.items) {
+        el.innerHTML = part.items.map(item => renderQuestion(item.q, item.type)).join('');
+      } else {
+        let html = '';
+        for (let q = part.start; q <= part.end; q++) html += renderQuestion(q, part.type);
+        el.innerHTML = html;
+      }
+    });
+
+    structure.lesen.forEach(part => {
+      const el = document.getElementById(part.container);
+      if (part.items) {
+        el.innerHTML = part.items.map(item => renderQuestion(item.q, item.type)).join('');
+      } else {
+        let html = '';
+        for (let q = part.start; q <= part.end; q++) html += renderQuestion(q, part.type);
+        el.innerHTML = html;
+      }
+    });
+  }
+
+  initLayout();
+
+  // Click Handler for All Answer Buttons
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.opt-btn');
+    if (!btn) return;
+
+    const group = btn.dataset.group;
+    const isAlreadyActive = btn.classList.contains('active');
+
+    // Deselect siblings in the same group
+    document.querySelectorAll(`.opt-btn[data-group="${group}"]`).forEach(b => {
+      b.classList.remove('active');
+    });
+
+    // If it wasn't active, activate it. If it was already active, it stays unselected.
+    if (!isAlreadyActive) {
+      btn.classList.add('active');
+    }
+
+    saveState();
+  });
+
+  // Date default
+  const dateInput = document.getElementById('test-date');
+  if (!dateInput.value) {
+    const now = new Date();
+    dateInput.value = now.toISOString().slice(0, 10);
+  }
+
+  // Section Toggles
+  const secH = document.getElementById('sec-hoeren');
+  const secL = document.getElementById('sec-lesen');
+  const secS = document.getElementById('sec-schreiben');
+  const tH = document.getElementById('toggle-hoeren');
+  const tL = document.getElementById('toggle-lesen');
+  const tS = document.getElementById('toggle-schreiben');
+
+  function updateVisibleSections() {
+    secH.classList.toggle('hidden', !tH.checked);
+    secL.classList.toggle('hidden', !tL.checked);
+    secS.classList.toggle('hidden', !tS.checked);
+    saveState();
+  }
+
+  tH.addEventListener('change', updateVisibleSections);
+  tL.addEventListener('change', updateVisibleSections);
+  tS.addEventListener('change', updateVisibleSections);
+
+  // Word Counter
+  const essay = document.getElementById('essay');
+  const wordCounter = document.getElementById('word-counter');
+  function updateWordCount() {
+    const text = essay.value.trim();
+    const count = text ? text.split(/\s+/).length : 0;
+    wordCounter.textContent = `Wörter: ${count}`;
+  }
+  essay.addEventListener('input', () => {
+    updateWordCount();
+    saveState();
+  });
+
+  document.getElementById('test-title').addEventListener('input', saveState);
+  dateInput.addEventListener('input', saveState);
+
+  // Timer
+  let timerDuration = 25 * 60;
+  let timerRemaining = 25 * 60;
+  let timerInterval = null;
+
+  function renderTimer() {
+    const m = Math.floor(timerRemaining / 60).toString().padStart(2, '0');
+    const s = (timerRemaining % 60).toString().padStart(2, '0');
+    document.getElementById('timer-display').textContent = `${m}:${s}`;
+  }
+
+  function setTimer(minutes) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    document.getElementById('btn-timer-toggle').textContent = 'Start';
+    timerDuration = minutes * 60;
+    timerRemaining = timerDuration;
+    renderTimer();
+  }
+
+  function toggleTimer() {
+    const btn = document.getElementById('btn-timer-toggle');
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      btn.textContent = 'Start';
+    } else {
+      if (timerRemaining <= 0) timerRemaining = timerDuration;
+      timerInterval = setInterval(() => {
+        if (timerRemaining > 0) {
+          timerRemaining--;
+          renderTimer();
+        } else {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          btn.textContent = 'Start';
+          alert('Zeit abgelaufen! (Час вичерпано!)');
+        }
+      }, 1000);
+      btn.textContent = 'Pause';
+    }
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    document.getElementById('btn-timer-toggle').textContent = 'Start';
+    timerRemaining = timerDuration;
+    renderTimer();
+  }
+  renderTimer();
+
+  // Storage & Persistence
+  const STORAGE_KEY = 'dtz_antwortbogen_data';
+
+  function saveState() {
+    const data = {
+      title: document.getElementById('test-title').value,
+      date: dateInput.value,
+      sections: {
+        hoeren: tH.checked,
+        lesen: tL.checked,
+        schreiben: tS.checked
+      },
+      answers: {},
+      schreiben_task: document.querySelector('.opt-btn.active[data-group="schreiben_task"]')?.dataset.val || '',
+      essay: essay.value
+    };
+
+    document.querySelectorAll('.opt-btn.active').forEach(btn => {
+      const g = btn.dataset.group;
+      if (g.startsWith('q_')) {
+        data.answers[g.replace('q_', '')] = btn.dataset.val;
+      }
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function loadState() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      if (data.title) document.getElementById('test-title').value = data.title;
+      if (data.date) dateInput.value = data.date;
+      if (data.sections) {
+        tH.checked = data.sections.hoeren ?? true;
+        tL.checked = data.sections.lesen ?? true;
+        tS.checked = data.sections.schreiben ?? true;
+        updateVisibleSections();
+      }
+      if (data.answers) {
+        Object.entries(data.answers).forEach(([q, val]) => {
+          const btn = document.querySelector(`.opt-btn[data-group="q_${q}"][data-val="${val}"]`);
+          if (btn) btn.classList.add('active');
+        });
+      }
+      if (data.schreiben_task) {
+        const btn = document.querySelector(`.opt-btn[data-group="schreiben_task"][data-val="${data.schreiben_task}"]`);
+        if (btn) btn.classList.add('active');
+      }
+      if (data.essay) {
+        essay.value = data.essay;
+        updateWordCount();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  loadState();
+
+  // Export Results
+  function exportResults(type) {
+    const title = document.getElementById('test-title').value || 'DTZ_Test';
+    const date = dateInput.value || 'Datum';
+    const parts = [];
+    if (tH.checked) parts.push('Hören');
+    if (tL.checked) parts.push('Lesen');
+    if (tS.checked) parts.push('Schreiben');
+
+    const answers = {};
+    for (let i = 1; i <= 45; i++) {
+      const active = document.querySelector(`.opt-btn.active[data-group="q_${i}"]`);
+      if (active) answers[i] = active.dataset.val;
+    }
+
+    const taskChoice = document.querySelector('.opt-btn.active[data-group="schreiben_task"]')?.dataset.val || 'Keine';
+
+    if (type === 'json') {
+      const resultObj = {
+        test: title,
+        datum: date,
+        teile: parts,
+        antworten: answers,
+        schreiben: {
+          aufgabe: taskChoice,
+          woerter: essay.value.trim() ? essay.value.trim().split(/\s+/).length : 0,
+          text: essay.value
+        }
+      };
+      const blob = new Blob([JSON.stringify(resultObj, null, 2)], { type: 'application/json' });
+      downloadBlob(blob, `${title}_${date}.json`);
+    } else {
+      let txt = `====================================\n`;
+      txt += `DTZ ANTWORTBOGEN - ERGEBNISSE\n`;
+      txt += `Test/Quelle : ${title}\n`;
+      txt += `Datum       : ${date}\n`;
+      txt += `Teile       : ${parts.join(', ')}\n`;
+      txt += `====================================\n\n`;
+
+      if (tH.checked) {
+        txt += `--- 1 HÖREN ---\n`;
+        for (let i = 1; i <= 20; i++) {
+          txt += `${i.toString().padStart(2, ' ')}: [ ${answers[i] || ' '} ]\n`;
+        }
+        txt += `\n`;
+      }
+
+      if (tL.checked) {
+        txt += `--- 2 LESEN ---\n`;
+        for (let i = 21; i <= 45; i++) {
+          txt += `${i.toString().padStart(2, ' ')}: [ ${answers[i] || ' '} ]\n`;
+        }
+        txt += `\n`;
+      }
+
+      if (tS.checked) {
+        txt += `--- 3 SCHREIBEN ---\n`;
+        txt += `Aufgabe : ${taskChoice}\n`;
+        txt += `Wörter  : ${essay.value.trim() ? essay.value.trim().split(/\s+/).length : 0}\n`;
+        txt += `Text:\n${essay.value}\n`;
+      }
+
+      const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+      downloadBlob(blob, `${title.replace(/\s+/g, '_')}_${date}.txt`);
+    }
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function clearAllData() {
+    if (confirm("Möchten Sie alle Eingaben zurücksetzen? (Очистити всі поля?)")) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  }
+</script>
+</body>
+</html>
